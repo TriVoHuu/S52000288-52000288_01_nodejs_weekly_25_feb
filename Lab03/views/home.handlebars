@@ -1,0 +1,97 @@
+<div class="container my-3">
+    <h3 class="h3">Danh sách sản phẩm</h3>
+    <a href="/add" class="btn btn-success btn-sm my-2">Thêm sản phẩm</a>
+    <p>Chọn một sản phẩm cụ thể để xem chi tiết</p>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>STT</th>
+                <th>Tên sản phẩm</th>
+                <th>Giá</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {{#each products}}
+            <tr id="{{this.id}}">
+                <td>{{@index}}</td>
+                <td><a href="/product/{{this.id}}">{{this.name}}</a></td>
+                <td>{{this.price}}</td>
+                <td>
+                    <a href="/edit/{{this.id}}">Chỉnh sửa</a> |
+                    <a data-id="{{this.id}}" data-name="{{this.name}}" class="delete-btn" href="/remove/{{this.id}}">Xoá</a>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="confirmDelete" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">Xoá sản phẩm</h1>
+                <button type="button" class="btn-close" id="btn-close-model-delete" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Bạn có muốn xoá sản phẩm <strong class="product-name"></strong>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-close-delete" class="btn btn-secondary"
+                    data-bs-dismiss="modal">Đóng</button>
+                <button type="button" class="btn btn-primary btn-confirm-delete">Xoá</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('.delete-btn').click(e => {
+        e.preventDefault()
+
+        let name = $(e.target).data('name')
+        let id = $(e.target).data('id')
+
+        $('#confirmDelete .product-name').html(name)
+        $('#confirmDelete .btn-confirm-delete').attr('data-id', id)
+
+        console.log('Clicked ', id, name)
+        $('#confirmDelete').show()
+    })
+
+    $('#confirmDelete .btn-confirm-delete').click(e => {
+        let id = $(e.target).data('id')
+        $('#confirmDelete').hide()
+        deleteProduct(id)
+    })
+
+    function deleteProduct(id) {
+        fetch('http://localhost:3000/delete', {
+            method: 'POST',
+            headers: {'Content-Type':'application/x-www-form-urlencoded'},
+            body: `id=${encodeURIComponent(id)}`
+        })
+        .then(res => res.json())
+        .then(json => {
+            if (json.code === 0) {
+                console.log('Xoá thành công')
+                $(`tr#${id}`).remove()
+            } else {
+                console.log(json.message)
+            }
+        })
+        .catch(e => console.log(e))
+    }
+
+    $('#btn-close-model-delete').click(e => {
+        $('#confirmDelete').hide()
+    })
+
+    $('#btn-close-delete').click(e => {
+        $('#confirmDelete').hide()
+    })
+</script>
